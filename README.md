@@ -1,36 +1,27 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+**MiniStore — E-Commerce Application**
 
-## Getting Started
+A responsive e-commerce web application featuring a catalog of over 100 products categorized across multiple departments, real-time search, cart management, instant checkout, and Stripe payment integration.
 
-First, run the development server:
+**Features**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+**Product Catalog**: Browse through a collection of 100+ items with high-quality images, descriptions, and pricing.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Category Filtering:** Filter products easily by category (Beauty, Fragrances, Furniture, Groceries, Home Decoration, Kitchen Accessories, Laptops, Men's Shirts, Men's Shoes, Men's Watches, Mobile Accessories, and more).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Instant Search:** Find products quickly using the live search bar.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Shopping Cart:** Real-time cart badge counter, add/remove items, and quantity adjustments.
 
-## Learn More
+**Checkout Options:** Flexible purchasing flow with both Add to Cart and direct Buy Now options.
 
-To learn more about Next.js, take a look at the following resources:
+**Stripe Integration:** Secure payment processing for online transactions.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Tech Stack**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Frontend:**  Next.js, Tailwind CSS
 
-## Deploy on Vercel
+**State Management:** React Hooks / Context API / Zustand / Redux
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Payments:** Stripe API
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Deployment:** Vercel
