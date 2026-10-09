@@ -1,69 +1,129 @@
-import Image from "next/image";
+// app/page.tsx
+'use client';
 
-export default function Home() {
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import Link from 'next/link';
+import { Product } from '@/types';
+import { useCart } from '@/store/useCart';
+
+async function fetchProducts(): Promise<Product[]> {
+  const res = await fetch('https://dummyjson.com/products?limit=100');
+  if (!res.ok) throw new Error('Failed to fetch products');
+  const data = await res.json();
+
+  // Normalize response data so every product has a single 'image' property
+  return data.products.map((item: any) => ({
+    id: item.id,
+    title: item.title,
+    price: item.price,
+    description: item.description,
+    category: item.category,
+    image: item.thumbnail || item.images?.[0] || '',
+  }));
+}
+
+export default function HomePage() {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const { data: products = [], isLoading, isError } = useQuery({
+    queryKey: ['products'],
+    queryFn: fetchProducts,
+  });
+
+  const addToCart = useCart((state) => state.addToCart);
+
+  // Extract unique categories dynamically for navigation links
+  const categories = Array.from(new Set(products.map((p) => p.category)));
+
+  // Filter products based only on search term
+  const filteredProducts = products.filter((product) => {
+    return (
+      product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
+
+  if (isLoading) return <div className="text-center py-10 font-semibold">Loading products...</div>;
+  if (isError) return <div className="text-center py-10 text-red-500">Error fetching products.</div>;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="space-y-6">
+      {/* Header Section */}
+      <div>
+        <h1 className="text-3xl font-bold">All products</h1>
+        <p className="text-gray-500 text-sm mt-1">{filteredProducts.length} products found.</p>
+      </div>
+
+      {/* Search Bar */}
+      <div className="flex gap-2 max-w-md">
+        <input
+          type="text"
+          placeholder="Search products..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="px-3 py-2 text-sm text-gray-500 hover:text-black"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Clear
+          </button>
+        )}
+      </div>
+
+      {/* Category Navigation Links (Directs to dedicated route) */}
+      <div className="flex flex-wrap gap-2">
+        {categories.map((cat) => (
+          <Link
+            key={cat}
+            href={`/category/${encodeURIComponent(cat.toLowerCase())}`}
+            className="px-4 py-1.5 rounded-full text-sm font-medium transition capitalize bg-gray-100 text-gray-700 hover:bg-black hover:text-white"
           >
-            Documentation
-          </a>
+            {cat}
+          </Link>
+        ))}
+      </div>
+
+      {/* Products Grid */}
+      {filteredProducts.length === 0 ? (
+        <div className="text-center py-12 text-gray-500">No products match your criteria.</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {filteredProducts.map((product) => (
+            <div
+              key={product.id}
+              className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between"
+            >
+              {/* Clickable Product Link */}
+              <Link href={`/products/${product.id}`} className="group cursor-pointer">
+                <img
+                  src={product.image}
+                  alt={product.title}
+                  className="h-48 w-full object-contain mb-4 group-hover:scale-105 transition"
+                />
+                <h2 className="font-semibold text-base line-clamp-1 group-hover:text-blue-600">
+                  {product.title}
+                </h2>
+                <p className="text-gray-500 text-xs mb-2 line-clamp-2">{product.description}</p>
+              </Link>
+
+              {/* Price and Cart Action */}
+              <div>
+                <p className="text-lg font-bold text-gray-900 my-2">${product.price}</p>
+                <button
+                  onClick={() => addToCart(product)}
+                  className="w-full bg-black text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition"
+                >
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
-      </main>
+      )}
     </div>
   );
 }
